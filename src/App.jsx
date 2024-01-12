@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Layer, Line, Rect, Stage } from "react-konva";
+import { v4 as uuidv4 } from "uuid";
+import LabelTarget from "./components/LabelTarget";
 
 function App() {
   const [canvSize, setCanvSize] = useState({ canvWidth: 0, canvHeight: 0 });
@@ -7,6 +9,7 @@ function App() {
   const [curMousePos, setCurMousePos] = useState([0, 0]);
   const [isFinished, setIsFinished] = useState(true);
   const [isMouseOverStartPoint, setIsMouseOverStartPoint] = useState(false);
+  const [labelObjList, setLabelObjList] = useState([]);
 
   const areaRef = useRef();
   const stageRef = useRef();
@@ -63,6 +66,13 @@ function App() {
 
     if (isMouseOverStartPoint && points.length >= 3) {
       setIsFinished(true);
+
+      const target = {
+        id: uuidv4(),
+        points: points,
+      };
+
+      setLabelObjList([...labelObjList, target]);
 
       setPoints([]);
     } else {
@@ -144,6 +154,11 @@ function App() {
                   />
                 );
               })}
+              {/* 만들어진 폴리곤 라벨 */}
+              {labelObjList.length > 0 &&
+                labelObjList.map((target) => (
+                  <LabelTarget key={target.id} target={target} />
+                ))}
             </Layer>
           </Stage>
         </div>
