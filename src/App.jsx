@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Layer, Line, Rect, Stage } from "react-konva";
 import { v4 as uuidv4 } from "uuid";
-import LabelTarget from "./components/LabelTarget";
+import Label from "./components/Label";
+import LabelSection from "./components/LabelSection";
 
 function App() {
   const [canvSize, setCanvSize] = useState({ canvWidth: 0, canvHeight: 0 });
@@ -9,7 +10,7 @@ function App() {
   const [curMousePos, setCurMousePos] = useState([0, 0]);
   const [isFinished, setIsFinished] = useState(true);
   const [isMouseOverStartPoint, setIsMouseOverStartPoint] = useState(false);
-  const [labelObjList, setLabelObjList] = useState([]);
+  const [labelList, setLabelList] = useState([]);
 
   const areaRef = useRef();
   const stageRef = useRef();
@@ -50,6 +51,20 @@ function App() {
     setIsFinished(false);
   }, []);
 
+  // 라벨 리스트 업데이트
+  const handleUpdateLabelList = (id, attrs) => {
+    const updateLabelList = labelList.map((obj) => {
+      if (obj.id !== id) {
+        return obj;
+      }
+      return {
+        ...obj,
+        ...attrs,
+      };
+    });
+    setLabelList(updateLabelList);
+  };
+
   // Stage 절대 포인트
   const getMousePos = (stage) => {
     return [stage.getPointerPosition().x, stage.getPointerPosition().y];
@@ -72,7 +87,7 @@ function App() {
         points: points,
       };
 
-      setLabelObjList([...labelObjList, target]);
+      setLabelList([...labelList, target]);
 
       setPoints([]);
     } else {
@@ -155,21 +170,18 @@ function App() {
                 );
               })}
               {/* 만들어진 폴리곤 라벨 */}
-              {labelObjList.length > 0 &&
-                labelObjList.map((target) => (
-                  <LabelTarget key={target.id} target={target} />
+              {labelList.length > 0 &&
+                labelList.map((label) => (
+                  <Label
+                    key={label.id}
+                    label={label}
+                    handleUpdateLabelList={handleUpdateLabelList}
+                  />
                 ))}
             </Layer>
           </Stage>
         </div>
-        <div className="w-1/5">
-          <button
-            className="px-4 py-2 m-2 text-white transition duration-500 bg-indigo-500 border border-indigo-500 rounded-md select-none ease hover:bg-indigo-600 focus:outline-none focus:shadow-outline"
-            onClick={handleStartDraw}
-          >
-            폴리곤 생성하기
-          </button>
-        </div>
+        <LabelSection handleStartDraw={handleStartDraw} labelList={labelList} />
       </div>
     </div>
   );
